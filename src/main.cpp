@@ -4,7 +4,7 @@
 #include <string>
 
 const std::string DEFAULT_DATABASE_PATH = "financial_records.db";
-const std::string INIT_MIGRATION = "migrations/init.sql";
+const std::string INIT_MIGRATION = "migrations/001_init.sql";
 
 int main(int argc, char **argv) {
   CLI::App app;
