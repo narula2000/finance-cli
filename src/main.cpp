@@ -8,6 +8,51 @@
 const std::string DEFAULT_DATABASE_PATH = "financial_records.db";
 const std::string INIT_MIGRATION = "migrations/001_init.sql";
 
+struct TableVerification {
+  int cid;
+  std::string name;
+  int type;
+  int not_null;
+  std::string default_value;
+  int primary_key;
+};
+
+std::ostream &operator<<(std::ostream &os, const TableVerification &tv) {
+  os << "row: " << tv.cid << " ";
+  os << tv.name << " ";
+  os << tv.type << " ";
+  os << tv.not_null << " ";
+  os << tv.default_value << " ";
+  os << tv.primary_key << '\n';
+
+  return os;
+}
+
+struct TableForiegnKeyVerification {
+  int id;
+  int seq;
+  std::string table;
+  std::string from;
+  std::string to;
+  std::string on_update;
+  std::string on_delete;
+  std::string match;
+};
+
+std::ostream &operator<<(std::ostream &os,
+                         const TableForiegnKeyVerification &tf) {
+  os << "row: " << tf.id << " ";
+  os << tf.seq << " ";
+  os << tf.table << " ";
+  os << tf.from << " ";
+  os << tf.to << " ";
+  os << tf.on_update << " ";
+  os << tf.on_delete << " ";
+  os << tf.match << '\n';
+
+  return os;
+}
+
 bool run_database_migration(SQLite::Database &db) {
   std::ifstream file(INIT_MIGRATION);
 
@@ -34,100 +79,60 @@ bool run_database_migration(SQLite::Database &db) {
   }
 }
 
+void verify_table(SQLite::Database &db, std::string table_name) {
+  SQLite::Statement verify(db, "PRAGMA table_info(" + table_name + ");");
+  std::cout << "Verifying " << table_name << "\n";
+  std::cout << "header: " << "cid " << "name " << "type " << "not_null "
+            << "default_value " << "primary_key " << '\n';
+  TableVerification table_verification;
+  while (verify.executeStep()) {
+    table_verification.cid = verify.getColumn(0);
+    table_verification.name = verify.getColumn(1).getString();
+    table_verification.type = verify.getColumn(2);
+    table_verification.not_null = verify.getColumn(3);
+    table_verification.default_value = verify.getColumn(4).getString();
+    table_verification.primary_key = verify.getColumn(5);
+
+    std::cout << "row: " << table_verification << " ";
+  }
+  std::cout << '\n';
+}
+
+void verify_foreign_key_table(SQLite::Database &db, std::string table_name) {
+  SQLite::Statement verify_transactions_foreign_keys(
+      db, "PRAGMA foreign_key_list(" + table_name + ");");
+  std::cout << "Verifying " << table_name << " foreign key\n";
+  std::cout << "header: " << "id " << "seq " << "table " << "from "
+            << "to " << "on_update " << "on_delete " << "match" << '\n';
+  TableForiegnKeyVerification table_verification;
+  while (verify_transactions_foreign_keys.executeStep()) {
+    table_verification.id = verify_transactions_foreign_keys.getColumn(0);
+    table_verification.seq = verify_transactions_foreign_keys.getColumn(1);
+    table_verification.table =
+        verify_transactions_foreign_keys.getColumn(2).getString();
+    table_verification.from =
+        verify_transactions_foreign_keys.getColumn(3).getString();
+    table_verification.to =
+        verify_transactions_foreign_keys.getColumn(4).getString();
+    table_verification.on_update =
+        verify_transactions_foreign_keys.getColumn(5).getString();
+    table_verification.on_delete =
+        verify_transactions_foreign_keys.getColumn(6).getString();
+    table_verification.match =
+        verify_transactions_foreign_keys.getColumn(7).getString();
+    std::cout << "row: " << table_verification << " ";
+  }
+  std::cout << '\n';
+}
+
 bool run_database_verification(SQLite::Database &db) {
   try {
-    SQLite::Transaction transaction(db);
+    verify_table(db, "accounts");
+    verify_table(db, "categories");
+    verify_table(db, "transactions");
+    verify_foreign_key_table(db, "transactions");
 
-    SQLite::Statement verify_accounts(db, "PRAGMA table_info(accounts);");
-    std::cout << "Verifying accounts\n";
-    std::cout << "header: " << "cid " << "name " << "type " << "not_null "
-              << "default_value " << "primary_key " << '\n';
-    while (verify_accounts.executeStep()) {
-      int cid = verify_accounts.getColumn(0);
-      std::string name = verify_accounts.getColumn(1);
-      int type = verify_accounts.getColumn(2);
-      int not_null = verify_accounts.getColumn(3);
-      std::string default_value = verify_accounts.getColumn(4);
-      int primary_key = verify_accounts.getColumn(5);
-
-      std::cout << "row: " << cid << " ";
-      std::cout << name << " ";
-      std::cout << type << " ";
-      std::cout << not_null << " ";
-      std::cout << default_value << " ";
-      std::cout << primary_key << '\n';
-    }
-    std::cout << '\n';
-
-    std::cout << "Verifying categories\n";
-    SQLite::Statement verify_categories(db, "PRAGMA table_info(categories);");
-    std::cout << "header: " << "cid " << "name " << "type " << "not_null "
-              << "default_value " << "primary_key " << '\n';
-    while (verify_categories.executeStep()) {
-      int cid = verify_categories.getColumn(0);
-      std::string name = verify_categories.getColumn(1);
-      int type = verify_categories.getColumn(2);
-      int not_null = verify_categories.getColumn(3);
-      std::string default_value = verify_categories.getColumn(4);
-      int primary_key = verify_categories.getColumn(5);
-
-      std::cout << "row: " << cid << " ";
-      std::cout << name << " ";
-      std::cout << type << " ";
-      std::cout << not_null << " ";
-      std::cout << default_value << " ";
-      std::cout << primary_key << '\n';
-    }
-    std::cout << '\n';
-
-    SQLite::Statement verify_transactions(db,
-                                          "PRAGMA table_info(transactions);");
-    std::cout << "Verifying transactions\n";
-    std::cout << "header: " << "cid " << "name " << "type " << "not_null "
-              << "default_value " << "primary_key " << '\n';
-    while (verify_transactions.executeStep()) {
-      int cid = verify_transactions.getColumn(0);
-      std::string name = verify_transactions.getColumn(1);
-      int type = verify_transactions.getColumn(2);
-      int not_null = verify_transactions.getColumn(3);
-      std::string default_value = verify_transactions.getColumn(4);
-      int primary_key = verify_transactions.getColumn(5);
-
-      std::cout << "row: " << cid << " ";
-      std::cout << name << " ";
-      std::cout << type << " ";
-      std::cout << not_null << " ";
-      std::cout << default_value << " ";
-      std::cout << primary_key << '\n';
-    }
-    std::cout << '\n';
-
-    SQLite::Statement verify_transactions_foreign_keys(
-        db, "PRAGMA foreign_key_list(transactions);");
-    std::cout << "Verifying transactions foreign key\n";
-    std::cout << "header: " << "id " << "seq " << "table " << "from "
-              << "to " << "on_update " << "on_delete " << "match" << '\n';
-    while (verify_transactions_foreign_keys.executeStep()) {
-      int id = verify_transactions_foreign_keys.getColumn(0);
-      int seq = verify_transactions_foreign_keys.getColumn(1);
-      std::string table = verify_transactions_foreign_keys.getColumn(2);
-      std::string from = verify_transactions_foreign_keys.getColumn(3);
-      std::string to = verify_transactions_foreign_keys.getColumn(4);
-      std::string on_update = verify_transactions_foreign_keys.getColumn(5);
-      std::string on_delete = verify_transactions_foreign_keys.getColumn(6);
-      std::string match = verify_transactions_foreign_keys.getColumn(7);
-      std::cout << "row: " << id << " ";
-      std::cout << seq << " ";
-      std::cout << table << " ";
-      std::cout << from << " ";
-      std::cout << to << " ";
-      std::cout << on_update << " ";
-      std::cout << on_delete << " ";
-      std::cout << match << '\n';
-    }
-    std::cout << '\n';
-
-    std::cout << "Migration completed successfully\n";
+    std::cout << "Verification completed successfully\n";
     return true;
   } catch (const SQLite::Exception &e) {
     std::cerr << "Migration failed: " << e.what() << '\n';
@@ -157,15 +162,11 @@ int main(int argc, char **argv) {
     SQLite::Database db(database_path,
                         SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
 
-    // Run migration
-    if (init_migration) {
-      if (!run_database_migration(db))
-        return 1;
+    if (init_migration and !run_database_migration(db))
+      return 1;
 
-    } else {
-      if (!run_database_verification(db))
-        return 1;
-    }
+    if (!run_database_verification(db))
+      return 1;
 
     // Render TUI
   } catch (const std::exception &exp) {
