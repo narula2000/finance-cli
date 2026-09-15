@@ -1,6 +1,6 @@
 # Finance TUI
 
-A fast, keyboard-driven personal finance manager built with C++20, FTXUI, CLI11, and SQLite.
+A fast, keyboard-driven personal finance manager built with C++20, FTXUI, CLI11, SQLite and SQLiteCpp.
 
 Manage your finances directly from the terminal without leaving your keyboard.
 
@@ -23,6 +23,7 @@ Manage your finances directly from the terminal without leaving your keyboard.
 - **FTXUI** — Terminal user interface
 - **CLI11** — Command-line argument parsing
 - **SQLite** — Local data storage
+- **SQLiteCpp** — SQLite wrapper for clean usage
 - **CMake** — Build system
 
 ## Requirements
