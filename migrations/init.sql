@@ -1,5 +1,3 @@
-PRAGMA foreign_keys = ON;
-
 DROP TABLE IF EXISTS transactions;
 DROP TABLE IF EXISTS categories;
 DROP TABLE IF EXISTS accounts;
@@ -19,8 +17,8 @@ CREATE TABLE categories (
 
 CREATE TABLE transactions (
     id INTEGER PRIMARY KEY,
-    account_id INTEGER NOT NULL,
-    category_id INTEGER NOT NULL,
+    account_id INTEGER,
+    category_id INTEGER,
     amount REAL NOT NULL,
     type TEXT NOT NULL,
     note TEXT,
@@ -28,9 +26,9 @@ CREATE TABLE transactions (
 
     FOREIGN KEY (account_id)
         REFERENCES accounts(id)
-        ON DELETE CASCADE,
+        ON DELETE SET NULL,
 
     FOREIGN KEY (category_id)
         REFERENCES categories(id)
-        ON DELETE CASCADE
+        ON DELETE SET NULL
 ) STRICT;
