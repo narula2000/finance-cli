@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 
 project(finance-tui
     VERSION 0.1.0
-    LANGUAGES CXX
+    LANGUAGES C CXX
 )
 
 set(CMAKE_CXX_STANDARD 20)
@@ -28,7 +28,39 @@ FetchContent_Declare(
     GIT_TAG v6.1.9
 )
 
-FetchContent_MakeAvailable(CLI11 ftxui)
+# SQLite
+FetchContent_Declare(
+    sqlite3
+    URL https://www.sqlite.org/2026/sqlite-amalgamation-3530400.zip
+    URL_HASH SHA3_256=628a44cfe82c66aed1ccbbe85a562d2e33ebe64b3288981ed76285612227934e
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+)
+
+FetchContent_MakeAvailable(CLI11 ftxui sqlite3)
+
+if(UNIX)
+    find_package(Threads REQUIRED)
+endif()
+
+add_library(sqlite3 STATIC
+    "${sqlite3_SOURCE_DIR}/sqlite3.c"
+)
+target_include_directories(sqlite3
+    PUBLIC
+        "${sqlite3_SOURCE_DIR}"
+)
+target_compile_definitions(sqlite3
+    PRIVATE
+        SQLITE_THREADSAFE=1
+        SQLITE_ENABLE_FTS5
+        SQLITE_ENABLE_JSON1
+)
+target_link_libraries(sqlite3
+    PRIVATE
+        Threads::Threads
+        ${CMAKE_DL_LIBS}
+)
+add_library(SQLite::SQLite3 ALIAS sqlite3)
 
 add_executable(finance-tui
     src/main.cpp
@@ -45,6 +77,7 @@ target_link_libraries(finance-tui
         ftxui::component
         ftxui::dom
         ftxui::screen
+        SQLite::SQLite3
 )
 
 # Strict compiler warnings for the project
