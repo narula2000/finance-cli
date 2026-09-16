@@ -82,8 +82,7 @@ struct TransactionsTableVerification {
   TableVerificationRow note{"note", "TEXT", 0, std::nullopt, 0
 
   };
-  TableVerificationRow transaction_date{"transaction_date", "TEXT", 1, std::nullopt,
-                                        0
+  TableVerificationRow date{"date", "TEXT", 1, std::nullopt, 0
 
   };
 };
@@ -96,7 +95,7 @@ TableVerificationMap transactions_table_verification_map = {
     {"amount", transactions_table_verification.amount},
     {"type", transactions_table_verification.type},
     {"note", transactions_table_verification.note},
-    {"transaction_date", transactions_table_verification.transaction_date},
+    {"date", transactions_table_verification.date},
 };
 
 std::unordered_map<std::string, TableVerificationMap> schema_verification_map =
