@@ -1,12 +1,11 @@
-# Finance TUI
+# Finance CLI
 
-A fast, keyboard-driven personal finance manager built with C++20, FTXUI, CLI11, SQLite and SQLiteCpp.
+A fast, keyboard-driven personal finance manager built with C++20, CLI11, SQLite and SQLiteCpp.
 
 Manage your finances directly from the terminal without leaving your keyboard.
 
 ## Features
 
-- 📊 Terminal-based user interface
 - 💰 Track income and expenses
 - 🧾 Manage financial transactions
 - 🏦 Manage accounts
@@ -20,7 +19,6 @@ Manage your finances directly from the terminal without leaving your keyboard.
 ## Tech Stack
 
 - **C++20** — Core application
-- **FTXUI** — Terminal user interface
 - **CLI11** — Command-line argument parsing
 - **SQLite** — Local data storage
 - **SQLiteCpp** — SQLite wrapper for clean usage
@@ -37,8 +35,8 @@ Manage your finances directly from the terminal without leaving your keyboard.
 1. Clone the repository:
 
    ```sh
-   git clone https://github.com/narula2000/finance-tui.git
-   cd finance-tui
+   git clone https://github.com/narula2000/finance-cli.git
+   cd finance-cli
    ```
 
 2. Configure the project:
@@ -56,13 +54,13 @@ Manage your finances directly from the terminal without leaving your keyboard.
 4. Run:
 
    ```sh
-   ./build/finance-tui
+   ./build/finance-cli
    ```
 
 5. Show CLI options:
 
    ```sh
-   ./build/finance-tui --help
+   ./build/finance-cli --help
    ```
 
 ## Compiler Warnings
@@ -79,7 +77,7 @@ The project is built with strict compiler warnings:
 ## Project Structure
 
 ```
-finance-tui/
+finance-cli/
 ├── CMakeLists.txt
 ├── README.md
 ├── include/

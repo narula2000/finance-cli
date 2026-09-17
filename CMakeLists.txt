@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.20)
 
 if(POLICY CMP0077)
-    cmake_policy(SET CMP0077 NEW)
+  cmake_policy(SET CMP0077 NEW)
 endif()
 
-project(finance-tui
+project(finance-cli
     VERSION 0.1.0
     LANGUAGES C CXX
 )
@@ -52,7 +52,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(CLI11 ftxui sqlite3)
 
 if(UNIX)
-    find_package(Threads REQUIRED)
+  find_package(Threads REQUIRED)
 endif()
 
 add_library(sqlite3 STATIC
@@ -83,16 +83,16 @@ set(SQLITECPP_FIND_SQLITE OFF)
 set(SQLITECPP_INSTALL OFF)
 FetchContent_MakeAvailable(SQLiteCpp)
 
-add_executable(finance-tui
+add_executable(finance-cli
     src/main.cpp
 )
 
-target_include_directories(finance-tui
+target_include_directories(finance-cli
     PRIVATE
         ${PROJECT_SOURCE_DIR}/include
 )
 
-target_link_libraries(finance-tui
+target_link_libraries(finance-cli
     PRIVATE
         CLI11::CLI11
         ftxui::component
@@ -104,12 +104,12 @@ target_link_libraries(finance-tui
 
 # Strict compiler warnings for the project
 if(MSVC)
-    target_compile_options(finance-tui PRIVATE
+  target_compile_options(finance-cli PRIVATE
         /W4
         /WX
     )
 else()
-    target_compile_options(finance-tui PRIVATE
+  target_compile_options(finance-cli PRIVATE
         -Wall
         -Wextra
         -Wpedantic
