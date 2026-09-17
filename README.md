@@ -1,8 +1,8 @@
 # Finance CLI
 
-A fast, keyboard-driven personal finance manager built with C++20, CLI11, SQLite and SQLiteCpp.
+A fast personal finance manager built with C++20, CLI11, SQLite and SQLiteCpp.
 
-Manage your finances directly from the terminal without leaving your keyboard.
+Manage your finances directly from the terminal.
 
 ## Features
 
@@ -12,7 +12,6 @@ Manage your finances directly from the terminal without leaving your keyboard.
 - 📅 View transaction history
 - 📈 Financial summaries and statistics
 - 💾 Local SQLite database
-- ⌨️ Keyboard-driven navigation
 - 🚀 Lightweight and fast
 - ⚠️ Strict compiler warnings
 

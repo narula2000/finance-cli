@@ -25,13 +25,6 @@ FetchContent_Declare(
     GIT_TAG v2.5.0
 )
 
-# FTXUI
-FetchContent_Declare(
-    ftxui
-    GIT_REPOSITORY https://github.com/ArthurSonzogni/FTXUI.git
-    GIT_TAG v6.1.9
-)
-
 # SQLite
 FetchContent_Declare(
     sqlite3
@@ -49,7 +42,7 @@ FetchContent_Declare(
     GIT_TAG 3c31070f0d1b1c46ce4b5ae48bdd0279e3610fa4
 )
 
-FetchContent_MakeAvailable(CLI11 ftxui sqlite3)
+FetchContent_MakeAvailable(CLI11 sqlite3)
 
 if(UNIX)
   find_package(Threads REQUIRED)
@@ -95,9 +88,6 @@ target_include_directories(finance-cli
 target_link_libraries(finance-cli
     PRIVATE
         CLI11::CLI11
-        ftxui::component
-        ftxui::dom
-        ftxui::screen
         SQLiteCpp
         SQLite::SQLite3
 )

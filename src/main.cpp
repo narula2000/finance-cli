@@ -298,7 +298,6 @@ int main(int argc, char **argv) {
     if (!run_database_verification(db))
       return 1;
 
-    // Render TUI
   } catch (const std::exception &exp) {
     std::cerr << "Exception: " << exp.what() << '\n';
     return 1;
