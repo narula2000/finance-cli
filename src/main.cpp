@@ -1,16 +1,16 @@
-#include <SQLiteCpp/SQLiteCpp.h>
-
-#include <CLI/CLI.hpp>
+// Copyright (c) 2026 Vikrom Narula. All Rights Reserved.
 #include <iostream>
 #include <optional>
 #include <string>
 #include <unordered_map>
 
+#include "CLI/CLI.hpp"
 #include "SQLiteCpp/Database.h"
 #include "SQLiteCpp/Statement.h"
+#include "SQLiteCpp/Transaction.h"
 
-const std::string DEFAULT_DATABASE_PATH = "financial_records.db";
-const std::string INIT_MIGRATION = "migrations/001_init.sql";
+const char DEFAULT_DATABASE_PATH[] = "financial_records.db";
+const char INIT_MIGRATION[] = "migrations/001_init.sql";
 
 struct TableVerificationRow {
   std::string name;
@@ -21,21 +21,14 @@ struct TableVerificationRow {
 };
 
 struct AccountsTableVerification {
-  TableVerificationRow id{"id", "INTEGER", 0, std::nullopt, 1
-
-  };
-  TableVerificationRow name{"name", "TEXT", 1, std::nullopt, 0
-
-  };
-  TableVerificationRow type{"type", "TEXT", 1, std::nullopt, 0
-
-  };
-  TableVerificationRow currency{"currency", "TEXT", 1, std::nullopt, 0
-
-  };
+  TableVerificationRow id{"id", "INTEGER", 0, std::nullopt, 1};
+  TableVerificationRow name{"name", "TEXT", 1, std::nullopt, 0};
+  TableVerificationRow type{"type", "TEXT", 1, std::nullopt, 0};
+  TableVerificationRow currency{"currency", "TEXT", 1, std::nullopt, 0};
 };
 
-using TableVerificationMap = std::unordered_map<std::string, TableVerificationRow>;
+using TableVerificationMap =
+    std::unordered_map<std::string, TableVerificationRow>;
 
 AccountsTableVerification accounts_table_verification;
 TableVerificationMap accounts_table_verification_map = {
@@ -46,15 +39,9 @@ TableVerificationMap accounts_table_verification_map = {
 };
 
 struct CategoriesTableVerification {
-  TableVerificationRow id{"id", "INTEGER", 0, std::nullopt, 1
-
-  };
-  TableVerificationRow name{"name", "TEXT", 1, std::nullopt, 0
-
-  };
-  TableVerificationRow type{"type", "TEXT", 1, std::nullopt, 0
-
-  };
+  TableVerificationRow id{"id", "INTEGER", 0, std::nullopt, 1};
+  TableVerificationRow name{"name", "TEXT", 1, std::nullopt, 0};
+  TableVerificationRow type{"type", "TEXT", 1, std::nullopt, 0};
 };
 
 CategoriesTableVerification categories_table_verification;
@@ -65,27 +52,14 @@ TableVerificationMap categories_table_verification_map = {
 };
 
 struct TransactionsTableVerification {
-  TableVerificationRow id{"id", "INTEGER", 0, std::nullopt, 1
-
-  };
-  TableVerificationRow account_id{"account_id", "INTEGER", 0, std::nullopt, 0
-
-  };
-  TableVerificationRow category_id{"category_id", "INTEGER", 0, std::nullopt, 0
-
-  };
-  TableVerificationRow amount{"amount", "REAL", 1, std::nullopt, 0
-
-  };
-  TableVerificationRow type{"type", "TEXT", 1, std::nullopt, 0
-
-  };
-  TableVerificationRow note{"note", "TEXT", 0, std::nullopt, 0
-
-  };
-  TableVerificationRow date{"date", "TEXT", 1, std::nullopt, 0
-
-  };
+  TableVerificationRow id{"id", "INTEGER", 0, std::nullopt, 1};
+  TableVerificationRow account_id{"account_id", "INTEGER", 0, std::nullopt, 0};
+  TableVerificationRow category_id{"category_id", "INTEGER", 0, std::nullopt,
+                                   0};
+  TableVerificationRow amount{"amount", "REAL", 1, std::nullopt, 0};
+  TableVerificationRow type{"type", "TEXT", 1, std::nullopt, 0};
+  TableVerificationRow note{"note", "TEXT", 0, std::nullopt, 0};
+  TableVerificationRow date{"date", "TEXT", 1, std::nullopt, 0};
 };
 
 TransactionsTableVerification transactions_table_verification;
@@ -99,13 +73,15 @@ TableVerificationMap transactions_table_verification_map = {
     {"date", transactions_table_verification.date},
 };
 
-std::unordered_map<std::string, TableVerificationMap> schema_verification_map = {
-    {"accounts", accounts_table_verification_map},
-    {"categories", categories_table_verification_map},
-    {"transactions", transactions_table_verification_map}};
+std::unordered_map<std::string, TableVerificationMap> schema_verification_map =
+    {{"accounts", accounts_table_verification_map},
+     {"categories", categories_table_verification_map},
+     {"transactions", transactions_table_verification_map}};
 
-bool CompareTableVerificationRow(TableVerificationRow& a, TableVerificationRow& b) {
-  return !(a.name != b.name || a.type != b.type || a.not_null != b.not_null || a.default_value != b.default_value ||
+bool CompareTableVerificationRow(TableVerificationRow& a,
+                                 TableVerificationRow& b) {
+  return !(a.name != b.name || a.type != b.type || a.not_null != b.not_null ||
+           a.default_value != b.default_value ||
            a.primary_key != b.primary_key);
 }
 
@@ -120,25 +96,31 @@ struct TableForeignKeyVerificationRow {
 };
 
 struct TransactionsTableForeignKeyVerification {
-  TableForeignKeyVerificationRow categories{0, "categories", "category_id", "id", "NO ACTION", "SET NULL", "NONE"};
-  TableForeignKeyVerificationRow accounts{0, "accounts", "account_id", "id", "NO ACTION", "SET NULL", "NONE"};
+  TableForeignKeyVerificationRow categories{
+      0, "categories", "category_id", "id", "NO ACTION", "SET NULL", "NONE"};
+  TableForeignKeyVerificationRow accounts{
+      0, "accounts", "account_id", "id", "NO ACTION", "SET NULL", "NONE"};
 };
 
-using TableForeignKeyVerificationMap = std::unordered_map<std::string, TableForeignKeyVerificationRow>;
+using TableForeignKeyVerificationMap =
+    std::unordered_map<std::string, TableForeignKeyVerificationRow>;
 
-TransactionsTableForeignKeyVerification transactions_table_foreign_key_verification;
-TableForeignKeyVerificationMap transactions_table_foreign_key_verification_map = {
-    {"categories", transactions_table_foreign_key_verification.categories},
-    {"accounts", transactions_table_foreign_key_verification.accounts},
-};
+TransactionsTableForeignKeyVerification
+    transactions_table_foreign_key_verification;
+TableForeignKeyVerificationMap transactions_table_foreign_key_verification_map =
+    {{"categories", transactions_table_foreign_key_verification.categories},
+     {"accounts", transactions_table_foreign_key_verification.accounts}};
 
-bool CompareTableForeignKeyVerificationRow(TableForeignKeyVerificationRow& a, TableForeignKeyVerificationRow& b) {
-  return !(a.seq != b.seq || a.table != b.table || a.from != b.from || a.to != b.to || a.on_update != b.on_update ||
+bool CompareTableForeignKeyVerificationRow(TableForeignKeyVerificationRow& a,
+                                           TableForeignKeyVerificationRow& b) {
+  return !(a.seq != b.seq || a.table != b.table || a.from != b.from ||
+           a.to != b.to || a.on_update != b.on_update ||
            a.on_delete != b.on_delete || a.match != b.match);
 }
 
-std::unordered_map<std::string, TableForeignKeyVerificationMap> foreign_key_verification_map = {
-    {"transactions", transactions_table_foreign_key_verification_map}};
+std::unordered_map<std::string, TableForeignKeyVerificationMap>
+    foreign_key_verification_map = {
+        {"transactions", transactions_table_foreign_key_verification_map}};
 
 bool RunDatabaseMigration(SQLite::Database& db) {
   std::ifstream file(INIT_MIGRATION);
@@ -148,7 +130,8 @@ bool RunDatabaseMigration(SQLite::Database& db) {
     return false;
   }
 
-  std::string init_query((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+  std::string init_query((std::istreambuf_iterator<char>(file)),
+                         std::istreambuf_iterator<char>());
   try {
     SQLite::Transaction transaction(db);
 
@@ -192,7 +175,8 @@ bool VerifyTable(SQLite::Database& db, std::string table_name) {
       return false;
     }
 
-    if (!CompareTableVerificationRow(expected_table_map[table_verification.name], table_verification)) {
+    if (!CompareTableVerificationRow(
+            expected_table_map[table_verification.name], table_verification)) {
       std::cerr << "Failed Verifying " << table_name << "\n";
       return false;
     }
@@ -202,7 +186,8 @@ bool VerifyTable(SQLite::Database& db, std::string table_name) {
 }
 
 bool VerifyForeignKeyTable(SQLite::Database& db, std::string table_name) {
-  SQLite::Statement verify_transactions_foreign_keys(db, "PRAGMA foreign_key_list(" + table_name + ");");
+  SQLite::Statement verify_transactions_foreign_keys(
+      db, "PRAGMA foreign_key_list(" + table_name + ");");
   std::cout << "Verifying " << table_name << " foreign key\n";
 
   if (!foreign_key_verification_map.contains(table_name)) {
@@ -210,24 +195,32 @@ bool VerifyForeignKeyTable(SQLite::Database& db, std::string table_name) {
     return false;
   }
 
-  TableForeignKeyVerificationMap expected_table_map = foreign_key_verification_map[table_name];
+  TableForeignKeyVerificationMap expected_table_map =
+      foreign_key_verification_map[table_name];
 
   TableForeignKeyVerificationRow table_verification;
   while (verify_transactions_foreign_keys.executeStep()) {
     table_verification.seq = verify_transactions_foreign_keys.getColumn(1);
-    table_verification.table = verify_transactions_foreign_keys.getColumn(2).getString();
-    table_verification.from = verify_transactions_foreign_keys.getColumn(3).getString();
-    table_verification.to = verify_transactions_foreign_keys.getColumn(4).getString();
-    table_verification.on_update = verify_transactions_foreign_keys.getColumn(5).getString();
-    table_verification.on_delete = verify_transactions_foreign_keys.getColumn(6).getString();
-    table_verification.match = verify_transactions_foreign_keys.getColumn(7).getString();
+    table_verification.table =
+        verify_transactions_foreign_keys.getColumn(2).getString();
+    table_verification.from =
+        verify_transactions_foreign_keys.getColumn(3).getString();
+    table_verification.to =
+        verify_transactions_foreign_keys.getColumn(4).getString();
+    table_verification.on_update =
+        verify_transactions_foreign_keys.getColumn(5).getString();
+    table_verification.on_delete =
+        verify_transactions_foreign_keys.getColumn(6).getString();
+    table_verification.match =
+        verify_transactions_foreign_keys.getColumn(7).getString();
 
     if (!expected_table_map.contains(table_verification.table)) {
       std::cerr << "Failed Verifying " << table_name << " foreign key\n";
       return false;
     }
 
-    if (!CompareTableForeignKeyVerificationRow(expected_table_map[table_verification.table], table_verification)) {
+    if (!CompareTableForeignKeyVerificationRow(
+            expected_table_map[table_verification.table], table_verification)) {
       std::cerr << "Failed Verifying " << table_name << " foreign key\n";
       return false;
     }
@@ -238,7 +231,8 @@ bool VerifyForeignKeyTable(SQLite::Database& db, std::string table_name) {
 
 bool RunDatabaseVerification(SQLite::Database& db) {
   try {
-    return VerifyTable(db, "accounts") && VerifyTable(db, "categories") && VerifyTable(db, "transactions") &&
+    return VerifyTable(db, "accounts") && VerifyTable(db, "categories") &&
+           VerifyTable(db, "transactions") &&
            VerifyForeignKeyTable(db, "transactions");
   } catch (const SQLite::Exception& e) {
     std::cerr << "Migration failed: " << e.what() << '\n';
@@ -250,7 +244,8 @@ int main(int argc, char** argv) {
   CLI::App app;
 
   std::string database_path;
-  app.add_option("--records", database_path, "This is the path to save the financial records");
+  app.add_option("--records", database_path,
+                 "This is the path to save the financial records");
   CLI11_PARSE(app, argc, argv);
 
   bool init_migration = false;
@@ -264,12 +259,12 @@ int main(int argc, char** argv) {
   }
 
   try {
-    SQLite::Database db(database_path, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
+    SQLite::Database db(database_path,
+                        SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
 
-    if (init_migration and !RunDatabaseMigration(db)) return 1;
+    if (init_migration && !RunDatabaseMigration(db)) return 1;
 
     if (!RunDatabaseVerification(db)) return 1;
-
   } catch (const std::exception& exp) {
     std::cerr << "Exception: " << exp.what() << '\n';
     return 1;
