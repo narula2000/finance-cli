@@ -104,7 +104,7 @@ std::unordered_map<std::string, TableVerificationMap> schema_verification_map = 
     {"categories", categories_table_verification_map},
     {"transactions", transactions_table_verification_map}};
 
-bool compare_table_verification_row(TableVerificationRow& a, TableVerificationRow& b) {
+bool CompareTableVerificationRow(TableVerificationRow& a, TableVerificationRow& b) {
   return !(a.name != b.name || a.type != b.type || a.not_null != b.not_null || a.default_value != b.default_value ||
            a.primary_key != b.primary_key);
 }
@@ -132,7 +132,7 @@ TableForeignKeyVerificationMap transactions_table_foreign_key_verification_map =
     {"accounts", transactions_table_foreign_key_verification.accounts},
 };
 
-bool compare_table_foreign_key_verification_row(TableForeignKeyVerificationRow& a, TableForeignKeyVerificationRow& b) {
+bool CompareTableForeignKeyVerificationRow(TableForeignKeyVerificationRow& a, TableForeignKeyVerificationRow& b) {
   return !(a.seq != b.seq || a.table != b.table || a.from != b.from || a.to != b.to || a.on_update != b.on_update ||
            a.on_delete != b.on_delete || a.match != b.match);
 }
@@ -140,7 +140,7 @@ bool compare_table_foreign_key_verification_row(TableForeignKeyVerificationRow& 
 std::unordered_map<std::string, TableForeignKeyVerificationMap> foreign_key_verification_map = {
     {"transactions", transactions_table_foreign_key_verification_map}};
 
-bool run_database_migration(SQLite::Database& db) {
+bool RunDatabaseMigration(SQLite::Database& db) {
   std::ifstream file(INIT_MIGRATION);
 
   if (!file) {
@@ -164,7 +164,7 @@ bool run_database_migration(SQLite::Database& db) {
   }
 }
 
-bool verify_table(SQLite::Database& db, std::string table_name) {
+bool VerifyTable(SQLite::Database& db, std::string table_name) {
   SQLite::Statement verify(db, "PRAGMA table_info(" + table_name + ");");
   std::cout << "Verifying " << table_name << "\n";
 
@@ -192,7 +192,7 @@ bool verify_table(SQLite::Database& db, std::string table_name) {
       return false;
     }
 
-    if (!compare_table_verification_row(expected_table_map[table_verification.name], table_verification)) {
+    if (!CompareTableVerificationRow(expected_table_map[table_verification.name], table_verification)) {
       std::cerr << "Failed Verifying " << table_name << "\n";
       return false;
     }
@@ -201,7 +201,7 @@ bool verify_table(SQLite::Database& db, std::string table_name) {
   return true;
 }
 
-bool verify_foreign_key_table(SQLite::Database& db, std::string table_name) {
+bool VerifyForeignKeyTable(SQLite::Database& db, std::string table_name) {
   SQLite::Statement verify_transactions_foreign_keys(db, "PRAGMA foreign_key_list(" + table_name + ");");
   std::cout << "Verifying " << table_name << " foreign key\n";
 
@@ -227,7 +227,7 @@ bool verify_foreign_key_table(SQLite::Database& db, std::string table_name) {
       return false;
     }
 
-    if (!compare_table_foreign_key_verification_row(expected_table_map[table_verification.table], table_verification)) {
+    if (!CompareTableForeignKeyVerificationRow(expected_table_map[table_verification.table], table_verification)) {
       std::cerr << "Failed Verifying " << table_name << " foreign key\n";
       return false;
     }
@@ -236,10 +236,10 @@ bool verify_foreign_key_table(SQLite::Database& db, std::string table_name) {
   return true;
 }
 
-bool run_database_verification(SQLite::Database& db) {
+bool RunDatabaseVerification(SQLite::Database& db) {
   try {
-    return verify_table(db, "accounts") && verify_table(db, "categories") && verify_table(db, "transactions") &&
-           verify_foreign_key_table(db, "transactions");
+    return VerifyTable(db, "accounts") && VerifyTable(db, "categories") && VerifyTable(db, "transactions") &&
+           VerifyForeignKeyTable(db, "transactions");
   } catch (const SQLite::Exception& e) {
     std::cerr << "Migration failed: " << e.what() << '\n';
     return false;
@@ -266,9 +266,9 @@ int main(int argc, char** argv) {
   try {
     SQLite::Database db(database_path, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
 
-    if (init_migration and !run_database_migration(db)) return 1;
+    if (init_migration and !RunDatabaseMigration(db)) return 1;
 
-    if (!run_database_verification(db)) return 1;
+    if (!RunDatabaseVerification(db)) return 1;
 
   } catch (const std::exception& exp) {
     std::cerr << "Exception: " << exp.what() << '\n';
